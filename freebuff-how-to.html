@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freebuff — Teste um Coding Agent de Graça</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --green: #00e676;
+    --green-dim: #00c853;
+    --green-bg: rgba(0, 230, 118, 0.08);
+    --green-bg2: rgba(0, 230, 118, 0.04);
+    --amber: #ffd740;
+    --amber-bg: rgba(255, 215, 64, 0.07);
+    --red: #ff5252;
+    --blue: #448aff;
+    --text: #e8e8e8;
+    --text-muted: #888;
+    --text-hint: #555;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Syne', sans-serif;
+    --body: 'DM Sans', sans-serif;
+    --radius: 8px;
+    --radius-lg: 14px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── HEADER ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: var(--green-bg);
+    border: 1px solid rgba(0,230,118,0.25);
+    border-radius: 4px;
+    padding: 4px 10px;
+    margin-bottom: 20px;
+  }
+  .badge::before { content: '●'; font-size: 8px; }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(32px, 6vw, 54px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 18px;
+  }
+  h1 span { color: var(--green); }
+
+  .subtitle {
+    font-size: 18px;
+    color: var(--text-muted);
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 13px;
+    color: var(--text-hint);
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+    font-family: var(--mono);
+  }
+  .meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* ── SECTIONS ── */
+  h2 {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    margin: 52px 0 16px;
+  }
+  h3 {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    margin: 28px 0 8px;
+  }
+  p { margin-bottom: 14px; color: var(--text-muted); }
+
+  /* ── CALLOUT ── */
+  .callout {
+    background: var(--green-bg2);
+    border-left: 3px solid var(--green);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 16px 20px;
+    margin: 24px 0;
+  }
+  .callout strong { color: var(--green); font-family: var(--mono); font-size: 13px; }
+  .callout p { margin: 6px 0 0; font-size: 15px; }
+
+  .callout-amber {
+    background: var(--amber-bg);
+    border-left: 3px solid var(--amber);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 16px 20px;
+    margin: 24px 0;
+  }
+  .callout-amber strong { color: var(--amber); font-family: var(--mono); font-size: 13px; }
+  .callout-amber p { margin: 6px 0 0; font-size: 15px; }
+
+  /* ── CODE BLOCKS ── */
+  .terminal {
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin: 20px 0;
+    overflow: hidden;
+  }
+  .terminal-bar {
+    background: var(--surface2);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f56; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #27c93f; }
+  .terminal-label {
+    margin-left: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-hint);
+    letter-spacing: 0.05em;
+  }
+  .terminal-body {
+    padding: 20px 22px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.8;
+  }
+  .prompt { color: var(--green); }
+  .cmd { color: #e8e8e8; }
+  .comment { color: var(--text-hint); }
+  .output { color: #9e9e9e; }
+  .highlight { color: var(--amber); }
+
+  /* ── FEATURE GRID ── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin: 24px 0;
+  }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    transition: border-color 0.2s;
+  }
+  .feature-card:hover { border-color: rgba(0,230,118,0.3); }
+  .feature-icon {
+    font-size: 22px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .feature-title {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+  .feature-desc {
+    font-size: 13px;
+    color: var(--text-hint);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ── STEPS ── */
+  .steps { margin: 24px 0; }
+  .step {
+    display: flex;
+    gap: 18px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background: var(--green-bg);
+    border: 1px solid rgba(0,230,118,0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green);
+    margin-top: 2px;
+  }
+  .step-content h3 { margin: 0 0 6px; font-size: 16px; }
+  .step-content p { margin: 0 0 10px; font-size: 14px; }
+
+  /* ── COMMANDS ── */
+  .cmd-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .cmd-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-hint);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 12px;
+  }
+  .cmd-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(42,42,42,0.5);
+    font-size: 14px;
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  .cmd-table td:first-child {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--green);
+    white-space: nowrap;
+  }
+
+  /* ── FLOW ── */
+  .flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin: 24px 0;
+    overflow-x: auto;
+  }
+  .flow-item {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+  }
+  .flow-item:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -10px;
+    top: 18px;
+    color: var(--text-hint);
+    font-size: 16px;
+  }
+  .flow-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 10px;
+    margin: 0 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+  }
+  .flow-label {
+    font-size: 11px;
+    color: var(--text-hint);
+    margin-top: 6px;
+    padding: 0 14px;
+    line-height: 1.4;
+  }
+
+  /* ── PRIVACY NOTE ── */
+  .privacy-note {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin: 32px 0;
+  }
+  .privacy-note h3 { margin: 0 0 12px; font-size: 15px; color: var(--amber); }
+  .privacy-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .privacy-ok { color: #00e676; flex-shrink: 0; margin-top: 2px; }
+  .privacy-warn { color: var(--amber); flex-shrink: 0; margin-top: 2px; }
+
+  /* ── CTA ── */
+  .cta-box {
+    background: var(--green-bg2);
+    border: 1px solid rgba(0,230,118,0.2);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    text-align: center;
+    margin-top: 52px;
+  }
+  .cta-box h2 { margin: 0 0 12px; font-size: 22px; }
+  .cta-box p { color: var(--text-muted); font-size: 15px; margin: 0 0 20px; }
+  .cta-btn {
+    display: inline-block;
+    background: var(--green);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: opacity 0.2s;
+  }
+  .cta-btn:hover { opacity: 0.85; }
+
+  /* ── DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: var(--green);
+  }
+
+  @media (max-width: 500px) {
+    .flow { flex-direction: column; align-items: stretch; }
+    .flow-item::after { display: none; }
+    .flow-item { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .flow-box { margin: 0; flex-shrink: 0; }
+    .flow-label { margin-top: 0; padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px;">
+  <div class="badge">ferramentas gratuitas</div>
+  <a href="https://www.linkedin.com/in/evertonllins/" target="_blank" style="display:inline-flex; align-items:center; gap:8px; text-decoration:none; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:7px 14px; transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,230,118,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#0a66c2"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+    <span style="font-family:var(--mono); font-size:12px; color:var(--text-muted); letter-spacing:0.02em;">evertonllins</span>
+  </a>
+</div>
+
+<h1>Freebuff:<br><span>coding agent</span><br>de graça, de verdade</h1>
+
+<p class="subtitle">Quer testar como um agente de IA funciona na prática, sem pagar nada? O Freebuff entrega exatamente isso — sem cadastro de cartão, sem trial de 14 dias.</p>
+
+<div class="meta">
+  <span>📅 Maio 2026</span>
+  <span>⏱ ~5 min de leitura</span>
+  <span>🔗 freebuff.com</span>
+</div>
+
+<!-- O QUE É -->
+<h2>O que é o Freebuff?</h2>
+
+<p>O Freebuff é um <strong>agente de codificação que roda no terminal</strong>, criado pelo time da Codebuff. A proposta é simples: você instala com um comando npm, abre no diretório do seu projeto e começa a pedir mudanças de código em linguagem natural.</p>
+
+<p>E como é grátis sem ser um trial? O custo é coberto por <strong>anúncios de texto exibidos no próprio CLI</strong> — a mesma lógica de apps de rádio gratuitos. Você vê um texto de ad enquanto o agente trabalha, e pronto.</p>
+
+<div class="callout">
+  <strong>por que isso importa</strong>
+  <p>Ferramentas como Claude Code, Cursor ou GitHub Copilot exigem assinatura. O Freebuff permite que você experimente o fluxo de trabalho com agente de IA sem comprometer crédito ou cartão.</p>
+</div>
+
+<!-- INSTALAÇÃO -->
+<h2>Instalação em 60 segundos</h2>
+
+<p>Você precisa ter o <strong>Node.js</strong> instalado (v18 ou superior). O comando de instalação é o mesmo em qualquer sistema — só o pré-requisito muda. Escolha o seu:</p>
+
+<div style="margin: 24px 0;">
+  <div style="display: flex; gap: 0; border-bottom: 1px solid var(--border);">
+    <button id="tab-win" onclick="switchTab('win')" style="font-family: var(--mono); font-size: 12px; padding: 10px 18px; background: var(--surface2); border: 1px solid var(--border); border-bottom: 2px solid var(--surface2); border-radius: 6px 6px 0 0; color: var(--green); cursor: pointer; margin-right: 4px; font-weight: 600; margin-bottom: -1px;">&#11137; Windows</button>
+    <button id="tab-mac" onclick="switchTab('mac')" style="font-family: var(--mono); font-size: 12px; padding: 10px 18px; background: transparent; border: 1px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0; color: var(--text-hint); cursor: pointer; margin-right: 4px;">&#8984; macOS</button>
+    <button id="tab-lnx" onclick="switchTab('lnx')" style="font-family: var(--mono); font-size: 12px; padding: 10px 18px; background: transparent; border: 1px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0; color: var(--text-hint); cursor: pointer;">$ Linux</button>
+  </div>
+
+  <div style="border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; padding: 24px 20px; background: var(--surface);">
+
+    <!-- WINDOWS -->
+    <div id="pane-win">
+      <h3 style="margin: 0 0 10px; font-size: 15px; color: #fff;">Passo 1 — Instalar o Node.js</h3>
+      <p>Baixe o instalador oficial em <a href="https://nodejs.org" target="_blank" style="color: var(--green);">nodejs.org</a> e execute o <code>.msi</code>. Na última tela, deixe marcado <strong>"Automatically install the necessary tools"</strong> — isso garante que dependências nativas de pacotes npm funcionem corretamente.</p>
+
+      <p>Prefere não usar o instalador? O <strong>winget</strong> já vem no Windows 11:</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="terminal-label">powershell — como administrador</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># instala Node.js LTS via winget</span></div>
+          <div><span class="prompt">PS&gt;</span> <span class="cmd">winget install OpenJS.NodeJS.LTS</span></div>
+          <br>
+          <div><span class="comment"># confirma</span></div>
+          <div><span class="prompt">PS&gt;</span> <span class="cmd">node --version</span></div>
+          <div class="output">v22.x.x</div>
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 10px; font-size: 15px; color: #fff;">Passo 2 — Liberar execução de scripts npm</h3>
+      <p>O Windows bloqueia scripts de terceiros por padrão. Rode uma vez como administrador para liberar pacotes globais npm:</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="terminal-label">powershell — como administrador</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">PS&gt;</span> <span class="cmd">Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned</span></div>
+          <div class="output">Execution policy changed.</div>
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 10px; font-size: 15px; color: #fff;">Passo 3 — Instalar e rodar o Freebuff</h3>
+      <p>Abra o <strong>PowerShell</strong> ou <strong>Windows Terminal</strong> (sem precisar de admin desta vez) na pasta do seu projeto:</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="terminal-label">powershell ou windows terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># instala o freebuff globalmente</span></div>
+          <div><span class="prompt">PS&gt;</span> <span class="cmd">npm install -g freebuff</span></div>
+          <br>
+          <div><span class="comment"># navega até o projeto</span></div>
+          <div><span class="prompt">PS&gt;</span> <span class="cmd">cd C:\Users\voce\meu-projeto</span></div>
+          <br>
+          <div><span class="comment"># inicia o agente</span></div>
+          <div><span class="prompt">PS&gt;</span> <span class="cmd">freebuff</span></div>
+          <br>
+          <div class="output">✓ Freebuff pronto. Descreva o que quer fazer...</div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top: 16px;">
+        <strong>usando WSL2?</strong>
+        <p>Se você já tem o WSL2 (Ubuntu no Windows), o processo é idêntico ao Linux — instale o Node via <code>nvm</code> dentro do terminal WSL e rode <code>npm install -g freebuff</code> normalmente.</p>
+      </div>
+    </div>
+
+    <!-- MACOS -->
+    <div id="pane-mac" style="display:none;">
+      <h3 style="margin: 0 0 10px; font-size: 15px; color: #fff;">Passo 1 — Instalar o Node.js via Homebrew</h3>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="terminal-label">terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># instala Homebrew (se não tiver)</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span></div>
+          <br>
+          <div><span class="comment"># instala Node.js</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">brew install node</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 10px; font-size: 15px; color: #fff;">Passo 2 — Instalar e rodar o Freebuff</h3>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="terminal-label">terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$</span> <span class="cmd">npm install -g freebuff</span></div>
+          <br>
+          <div><span class="prompt">$</span> <span class="cmd">cd meu-projeto</span></div>
+          <br>
+          <div><span class="prompt">$</span> <span class="cmd">freebuff</span></div>
+          <br>
+          <div class="output">✓ Freebuff pronto. Descreva o que quer fazer...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LINUX -->
+    <div id="pane-lnx" style="display:none;">
+      <h3 style="margin: 0 0 10px; font-size: 15px; color: #fff;">Passo 1 — Instalar o Node.js via nvm</h3>
+      <p>Use o <strong>nvm</strong> para gerenciar versões sem precisar de sudo:</p>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="terminal-label">terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="comment"># instala o nvm</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash</span></div>
+          <br>
+          <div><span class="comment"># recarrega o shell e instala Node LTS</span></div>
+          <div><span class="prompt">$</span> <span class="cmd">source ~/.bashrc &amp;&amp; nvm install --lts</span></div>
+        </div>
+      </div>
+
+      <h3 style="margin: 24px 0 10px; font-size: 15px; color: #fff;">Passo 2 — Instalar e rodar o Freebuff</h3>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <span class="terminal-label">terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$</span> <span class="cmd">npm install -g freebuff</span></div>
+          <br>
+          <div><span class="prompt">$</span> <span class="cmd">cd meu-projeto</span></div>
+          <br>
+          <div><span class="prompt">$</span> <span class="cmd">freebuff</span></div>
+          <br>
+          <div class="output">✓ Freebuff pronto. Descreva o que quer fazer...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<p>Não há API key para configurar, não há arquivo de configuração para criar. Só isso.</p>
+
+<script>
+function switchTab(tab) {
+  ['win','mac','lnx'].forEach(function(t) {
+    var pane = document.getElementById('pane-'+t);
+    var btn  = document.getElementById('tab-'+t);
+    if (t === tab) {
+      pane.style.display = 'block';
+      btn.style.background = 'var(--surface2)';
+      btn.style.border = '1px solid var(--border)';
+      btn.style.borderBottom = '2px solid var(--surface2)';
+      btn.style.color = 'var(--green)';
+      btn.style.fontWeight = '600';
+    } else {
+      pane.style.display = 'none';
+      btn.style.background = 'transparent';
+      btn.style.border = '1px solid transparent';
+      btn.style.borderBottom = 'none';
+      btn.style.color = 'var(--text-hint)';
+      btn.style.fontWeight = 'normal';
+    }
+  });
+}
+</script>
+
+<!-- FEATURES -->
+<h2>O que vem dentro da caixa</h2>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <span class="feature-icon">🤖</span>
+    <div class="feature-title">9 subagentes especializados</div>
+    <p class="feature-desc">Code review, browser use, file picker, planner e mais — coordenados automaticamente</p>
+  </div>
+  <div class="feature-card">
+    <span class="feature-icon">🌐</span>
+    <div class="feature-title">Pesquisa na web</div>
+    <p class="feature-desc">Busca informações online sem você precisar copiar e colar docs</p>
+  </div>
+  <div class="feature-card">
+    <span class="feature-icon">🖥️</span>
+    <div class="feature-title">Uso de browser</div>
+    <p class="feature-desc">Consegue navegar em páginas para testar e validar mudanças</p>
+  </div>
+  <div class="feature-card">
+    <span class="feature-icon">⚡</span>
+    <div class="feature-title">Velocidade</div>
+    <p class="feature-desc">Modelos rápidos + coleta de contexto em segundos, não minutos</p>
+  </div>
+  <div class="feature-card">
+    <span class="feature-icon">💬</span>
+    <div class="feature-title">Histórico de chat</div>
+    <p class="feature-desc">Retome conversas anteriores com <code>/history</code></p>
+  </div>
+  <div class="feature-card">
+    <span class="feature-icon">🧠</span>
+    <div class="feature-title">Deep thinking opcional</div>
+    <p class="feature-desc">Conecte sua assinatura ChatGPT para raciocínio mais profundo</p>
+  </div>
+</div>
+
+<!-- COMO USAR -->
+<h2>Como usar na prática</h2>
+
+<p>O fluxo recomendado para tarefas maiores tem quatro etapas. Para tarefas pequenas ("adicione um botão aqui", "corrija esse bug") é só digitar o pedido diretamente.</p>
+
+<div class="flow">
+  <div class="flow-item">
+    <div class="flow-box">/interview</div>
+    <div class="flow-label">Agente faz perguntas sobre o que você quer</div>
+  </div>
+  <div class="flow-item">
+    <div class="flow-box">/plan</div>
+    <div class="flow-label">Gera um plano de mudanças antes de editar</div>
+  </div>
+  <div class="flow-item">
+    <div class="flow-box">implementa</div>
+    <div class="flow-label">Você confirma e o agente edita os arquivos</div>
+  </div>
+  <div class="flow-item">
+    <div class="flow-box">/review</div>
+    <div class="flow-label">Code review automático do que foi feito</div>
+  </div>
+</div>
+
+<h3>Exemplo real de uso</h3>
+
+<div class="terminal">
+  <div class="terminal-bar">
+    <div class="dot dot-r"></div>
+    <div class="dot dot-y"></div>
+    <div class="dot dot-g"></div>
+    <span class="terminal-label">sessão freebuff</span>
+  </div>
+  <div class="terminal-body">
+    <div class="comment"># pedido simples direto</div>
+    <div><span class="prompt">></span> <span class="cmd">adicione autenticação JWT à rota /api/users</span></div>
+    <br>
+    <div class="output">→ Analisando estrutura do projeto...</div>
+    <div class="output">→ Encontrei: routes/users.js, middleware/auth.js</div>
+    <div class="output">→ Planejando alterações em 3 arquivos...</div>
+    <br>
+    <div class="comment"># mentionando arquivo específico</div>
+    <div><span class="prompt">></span> <span class="cmd">refatore <span class="highlight">@components/Header.tsx</span> para aceitar props de tema</span></div>
+    <br>
+    <div class="comment"># modo bash para rodar comandos</div>
+    <div><span class="prompt">></span> <span class="cmd">!npm test</span></div>
+    <div class="comment"># ou</div>
+    <div><span class="prompt">></span> <span class="cmd">/bash</span></div>
+  </div>
+</div>
+
+<!-- COMANDOS -->
+<h2>Referência de comandos</h2>
+
+<div class="terminal" style="margin: 0;">
+  <div class="terminal-bar">
+    <div class="dot dot-r"></div>
+    <div class="dot dot-y"></div>
+    <div class="dot dot-g"></div>
+    <span class="terminal-label">comandos úteis</span>
+  </div>
+  <div class="terminal-body" style="padding: 0;">
+    <table class="cmd-table">
+      <thead>
+        <tr>
+          <th>Comando</th>
+          <th>O que faz</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>/interview</td><td>Agente faz perguntas para entender melhor o objetivo</td></tr>
+        <tr><td>/plan</td><td>Mostra um plano detalhado antes de qualquer edição</td></tr>
+        <tr><td>/review</td><td>Code review automático das mudanças feitas</td></tr>
+        <tr><td>/history</td><td>Lista conversas anteriores para retomar</td></tr>
+        <tr><td>/bash</td><td>Entra em modo bash para executar comandos</td></tr>
+        <tr><td>/theme:toggle</td><td>Alterna entre tema claro e escuro no terminal</td></tr>
+        <tr><td>@filename</td><td>Menciona um arquivo específico no contexto</td></tr>
+        <tr><td>@AgentName</td><td>Invoca um subagente específico diretamente</td></tr>
+        <tr><td>!comando</td><td>Executa um comando no terminal sem sair do chat</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="callout" style="margin-top: 20px;">
+  <strong>dica extra</strong>
+  <p>Crie um arquivo <code>knowledge.md</code> na raiz do projeto com informações sobre sua stack, padrões de código e convenções. O Freebuff vai usá-lo automaticamente como contexto em todas as respostas.</p>
+</div>
+
+<!-- MODELOS -->
+<h2>Quais modelos são usados?</h2>
+
+<p>O Freebuff usa modelos diferentes para diferentes etapas do fluxo. Os principais são:</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h3>DeepSeek V4 Flash</h3>
+      <p>Modelo mais rápido, usado para coleta de contexto e tarefas simples</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <h3>Kimi K2.6 / MiniMax M2.7</h3>
+      <p>Usados como agente principal de codificação — bom equilíbrio entre velocidade e qualidade</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <h3>DeepSeek V4 Pro</h3>
+      <p>O mais capaz — mas atenção: a API do DeepSeek coleta dados para treinamento do modelo deles</p>
+    </div>
+  </div>
+</div>
+
+<!-- LIMITED MODE -->
+<h2>Brasil e o Limited Mode</h2>
+
+<p>O Freebuff funciona em todos os países, mas divide o acesso em dois níveis. O acesso <strong>full</strong> está disponível para uma lista de países como EUA, Reino Unido, Portugal, Alemanha e outros da Europa Ocidental. Para todos os demais — incluindo o <strong>Brasil</strong> — o serviço opera em <strong>limited mode</strong>.</p>
+
+<div class="privacy-note" style="border-color: var(--border);">
+  <h3 style="color: var(--text); margin-bottom: 18px;">Full Mode vs Limited Mode</h3>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div>
+      <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); margin-bottom: 10px;">✦ Full Mode</div>
+      <div class="privacy-row"><span class="privacy-ok">✓</span><span>Todos os 9 subagentes</span></div>
+      <div class="privacy-row"><span class="privacy-ok">✓</span><span>Múltiplos modelos (Kimi, MiniMax, DeepSeek Pro)</span></div>
+      <div class="privacy-row"><span class="privacy-ok">✓</span><span>Sem limite de sessões por dia</span></div>
+      <div class="privacy-row"><span class="privacy-ok">✓</span><span>EUA, UK, Portugal, Alemanha, França e outros</span></div>
+    </div>
+    <div>
+      <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin-bottom: 10px;">⚡ Limited Mode</div>
+      <div class="privacy-row"><span class="privacy-warn">⚠</span><span>Apenas DeepSeek V4 Flash</span></div>
+      <div class="privacy-row"><span class="privacy-warn">⚠</span><span>5 sessões de 1 hora por dia</span></div>
+      <div class="privacy-row"><span class="privacy-ok">✓</span><span>Funciona normalmente — só com VPN também</span></div>
+      <div class="privacy-row"><span class="privacy-ok">✓</span><span>Brasil, e demais países fora da lista</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="callout-amber">
+  <strong>para usuários brasileiros</strong>
+  <p>Você tem <strong>5 sessões de 1 hora por dia</strong> com o DeepSeek V4 Flash. É menos que o full mode, mas ainda é suficiente para experimentar o fluxo completo de agente de IA — sem pagar nada. Para tarefas do dia a dia, 5 horas costumam ser mais que suficientes.</p>
+</div>
+
+<p>Se você usa VPN apontada para um dos países da lista de acesso full, o Freebuff também entrará em limited mode — a ferramenta detecta o modo pelo IP de saída.</p>
+
+<!-- PRIVACIDADE -->
+<div class="privacy-note">
+  <h3>⚠️ Privacidade — o que saber antes de usar</h3>
+  <div class="privacy-row">
+    <span class="privacy-ok">✓</span>
+    <span>O Freebuff em si não treina nos seus dados</span>
+  </div>
+  <div class="privacy-row">
+    <span class="privacy-ok">✓</span>
+    <span>Modelos sem o label "Collects data for training" não compartilham seu código</span>
+  </div>
+  <div class="privacy-row">
+    <span class="privacy-warn">⚠</span>
+    <span>DeepSeek V4 Pro coleta dados para treinamento — evite com código proprietário ou sensível (esse modelo não está disponível no limited mode)</span>
+  </div>
+  <div class="privacy-row">
+    <span class="privacy-warn">⚠</span>
+    <span>O backend é na nuvem — não é uma solução 100% local</span>
+  </div>
+</div>
+
+<!-- QUANDO USAR -->
+<h2>Quando faz sentido usar o Freebuff?</h2>
+
+<p>É ideal para quem quer:</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-num">✓</div>
+    <div class="step-content">
+      <h3>Entender o fluxo de trabalho com agente de IA</h3>
+      <p>Antes de pagar por Claude Code ou Cursor, experimente como é trabalhar com um agente editando seus arquivos</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">✓</div>
+    <div class="step-content">
+      <h3>Projetos pessoais e estudos</h3>
+      <p>Acelere projetos side onde custo de ferramentas não cabe no orçamento</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">✓</div>
+    <div class="step-content">
+      <h3>Prototipagem rápida</h3>
+      <p>Gere scaffolding, componentes e rotas sem configurar nenhuma integração paga</p>
+    </div>
+  </div>
+</div>
+
+<div class="callout-amber">
+  <strong>mas atenção</strong>
+  <p>Para projetos profissionais com código proprietário, prefira ferramentas com SLAs de privacidade claros. O Freebuff brilha em projetos abertos, estudos e experimentação.</p>
+</div>
+
+<!-- CTA -->
+<div class="cta-box">
+  <h2>Pronto pra testar?</h2>
+  <p>Um comando e você já está usando um coding agent de verdade, sem gastar nada.</p>
+  <a href="https://freebuff.com" class="cta-btn">→ freebuff.com</a>
+  <br><br>
+  <code style="display: inline-block; margin-top: 8px; font-size: 14px;">npm install -g freebuff</code>
+</div>
+
+
+<div style="margin-top:48px; padding-top:24px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+  <span style="font-family:var(--mono); font-size:12px; color:var(--text-hint);">escrito por</span>
+  <a href="https://www.linkedin.com/in/evertonllins/" target="_blank" style="display:inline-flex; align-items:center; gap:10px; text-decoration:none;">
+    <div style="width:36px; height:36px; border-radius:50%; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#0a66c2"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+    </div>
+    <div>
+      <div style="font-family:var(--display); font-size:14px; font-weight:700; color:#fff;">Everton Llins</div>
+      <div style="font-family:var(--mono); font-size:11px; color:var(--text-hint); margin-top:1px;">linkedin.com/in/evertonllins</div>
+    </div>
+  </a>
+</div>
+
+</body>
+</html>
